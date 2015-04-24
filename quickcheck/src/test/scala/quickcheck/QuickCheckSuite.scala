@@ -1,5 +1,6 @@
 package quickcheck
 
+import com.sun.java.swing.plaf._
 import org.scalatest.FunSuite
 
 import org.junit.runner.RunWith
