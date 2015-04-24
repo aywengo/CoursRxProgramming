@@ -16,29 +16,25 @@ final case class Divide(a: Expr, b: Expr) extends Expr
 
 object Calculator {
   def computeValues(
-                     namedExpressions: Map[String, Signal[Expr]]): Map[String, Signal[Double]] = {
-    namedExpressions map {
-      case (x: String,
-      expr: Signal[Expr]) =>
-        (x, Signal {
-          eval(expr(), namedExpressions - x)
-        })
+    namedExpressions: Map[String, Signal[Expr]]): Map[String, Signal[Double]] = {
+      namedExpressions map {
+        case (x: String,
+            expr: Signal[Expr]) =>
+              (x, Signal {
+                eval(expr(), namedExpressions - x)
+              })
     }
   }
 
   def eval(expr: Expr, references: Map[String, Signal[Expr]]): Double = {
-    def evalHelp(a: Expr) = eval(a, references)
-
     expr match {
       case Literal(v) => v
       case Ref(name) => if (references contains name) eval(references(name)(), references - name) else Double.NaN
-      case Plus(a, b) => evalHelp(a) + evalHelp(b)
-      case Minus(a, b) => evalHelp(a) - evalHelp(b)
-      case Times(a, b) => evalHelp(a) * evalHelp(b)
-      case Divide(a, b) => {
-        val evalB = evalHelp(b)
-        if (evalB == 0) Double.NaN else evalHelp(a) / evalB
-      }
+      case Plus(a, b) => eval(a, references) + eval(b, references)
+      case Minus(a, b) => eval(a, references) - eval(b, references)
+      case Times(a, b) => eval(a, references) * eval(b, references)
+      case Divide(a, b) =>
+        if (eval(b, references) != 0) eval(a, references) / eval(b, references) else Double.NaN
     }
   }
 
