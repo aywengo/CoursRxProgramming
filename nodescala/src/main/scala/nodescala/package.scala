@@ -17,7 +17,7 @@ package object nodescala {
 
     /** Returns a future that is always completed with `value`.
      */
-    def always[T](value: T): Future[T] = Promise.successful(value).future
+    def always[T](value: T): Future[T] = Future.always(value)
     /** Returns a future that is never completed.
      *
      *  This future may be useful when testing if timeout logic works correctly.
@@ -92,7 +92,7 @@ package object nodescala {
       val p = Promise[S]()
       f.onComplete {
         case Failure(x) => p.failure(x)
-        case Success(x) => p.complete(Try(cont(Future.always(x))))
+        case Success(x) => p.success(cont(f))
       }
       p.future
     }
@@ -103,12 +103,7 @@ package object nodescala {
      *  The function `cont` is called only after the current future completes.
      *  The resulting future contains a value returned by `cont`.
      */
-    def continue[S](cont: Try[T] => S): Future[S] = {
-      val p = Promise[S]()
-      f.onComplete { x => p.complete(Try(cont(x))) }
-      p.future
-    }
-
+    def continue[S](cont: Try[T] => S): Future[S] = continueWith(f => cont(f.value.get))
   }
 
   /** Subscription objects are used to be able to unsubscribe
