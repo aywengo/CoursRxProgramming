@@ -27,9 +27,14 @@ trait NodeScala {
    *
    *  @param exchange     the exchange used to write the response back
    *  @param token        the cancellation token 
-   *  @param body         the response to write back
+   *  @param response         the response to write back
    */
-  private def respond(exchange: Exchange, token: CancellationToken, response: Response): Unit = ???
+  private def respond(exchange: Exchange, token: CancellationToken, response: Response): Unit = {
+    while(token.nonCancelled && response.hasNext) {
+      exchange.write(response.nextElement())
+    }
+    exchange.close()
+  }
 
   /** A server:
    *  1) creates and starts an http listener
@@ -41,7 +46,19 @@ trait NodeScala {
    *  @param handler        a function mapping a request to a response
    *  @return               a subscription that can stop the server and all its asynchronous operations *entirely*
    */
-  def start(relativePath: String)(handler: Request => Response): Subscription = ???
+  def start(relativePath: String)(handler: Request => Response): Subscription = {
+    val listener = createListener(relativePath)
+    val listenerSubscription = listener.start()
+    Future.run() { ct =>
+      async {
+        while (ct.nonCancelled) {
+          val (req, xchg) = await { listener.nextRequest() }
+          respond(xchg, ct, handler(req))
+        }
+        listenerSubscription.unsubscribe()
+      }
+    }
+  }
 
 }
 
@@ -76,7 +93,7 @@ object NodeScala {
 
   object Exchange {
     def apply(exchange: HttpExchange) = new Exchange {
-      val os = exchange.getResponseBody()
+      val os = exchange.getResponseBody
       exchange.sendResponseHeaders(200, 0L)
 
       def write(s: String) = os.write(s.getBytes)
@@ -112,13 +129,11 @@ object NodeScala {
      */
     def nextRequest(): Future[(Request, Exchange)] = {
       val p = Promise[(Request, Exchange)]()
-
       createContext(xchg => {
         val req = xchg.request
         removeContext()
         p.success((req, xchg))
       })
-
       p.future
     }
   }
