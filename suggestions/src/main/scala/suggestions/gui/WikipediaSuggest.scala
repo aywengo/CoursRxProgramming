@@ -90,9 +90,9 @@ object WikipediaSuggest extends SimpleSwingApplication with ConcreteSwingApi wit
 
     // TO IMPLEMENT
     val suggestionSubscription: Subscription =  suggestions.observeOn(eventScheduler) subscribe {
-      _ match {
-        case Success(v) => suggestionList.listData = v
-        case Failure(e) => status.text = e.getMessage
+      x => x match {
+        case Success(result) => suggestionList.listData = result
+        case Failure(err) => status.text = err.getMessage
       }
     }
 
@@ -106,9 +106,9 @@ object WikipediaSuggest extends SimpleSwingApplication with ConcreteSwingApi wit
 
     // TO IMPLEMENT
     val pageSubscription: Subscription = pages.observeOn(eventScheduler) subscribe {
-      _ match {
-        case Success(v) => editorpane.text = v
-        case Failure(e) => status.text = e.getMessage
+      x => x match {
+        case Success(result) => editorpane.text = result
+        case Failure(err) => editorpane.text = err.getMessage
       }
     }
 
