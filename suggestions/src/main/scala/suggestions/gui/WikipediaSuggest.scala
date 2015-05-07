@@ -84,9 +84,7 @@ object WikipediaSuggest extends SimpleSwingApplication with ConcreteSwingApi wit
     val searchTerms: Observable[String] = searchTermField.textValues
 
     // TO IMPLEMENT
-    val suggestions: Observable[Try[List[String]]] = searchTerms concatRecovered { keyWord =>
-      wikiSuggestResponseStream(keyWord) timedOut(1)
-    }
+    val suggestions: Observable[Try[List[String]]] = searchTerms.sanitized concatRecovered wikiSuggestResponseStream
 
     // TO IMPLEMENT
     val suggestionSubscription: Subscription =  suggestions.observeOn(eventScheduler) subscribe {
@@ -97,7 +95,10 @@ object WikipediaSuggest extends SimpleSwingApplication with ConcreteSwingApi wit
     }
 
     // TO IMPLEMENT
-    val selections: Observable[String] = button.clicks map { _ =>  suggestionList.selection.items.head }
+    val selections: Observable[String] = button.clicks flatMap  { _ =>
+      if (suggestionList.selection.items.size == 0) Observable.error(new Exception("NoSelection"))
+      else Observable.just(suggestionList.selection.items(0))
+    }
 
     // TO IMPLEMENT
     val pages: Observable[Try[String]] = selections.sanitized concatRecovered wikiPageResponseStream
