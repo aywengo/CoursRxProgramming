@@ -100,9 +100,7 @@ object WikipediaSuggest extends SimpleSwingApplication with ConcreteSwingApi wit
     val selections: Observable[String] = button.clicks map { _ =>  suggestionList.selection.items.head }
 
     // TO IMPLEMENT
-    val pages: Observable[Try[String]] = selections.sanitized
-      .concatRecovered { keyWord => wikiPageResponseStream(keyWord) timedOut(5) }
-    selections.sanitized.concatRecovered(wikiPageResponseStream(_).timedOut(2))
+    val pages: Observable[Try[String]] = selections.sanitized concatRecovered wikiPageResponseStream
 
     // TO IMPLEMENT
     val pageSubscription: Subscription = pages.observeOn(eventScheduler) subscribe {
