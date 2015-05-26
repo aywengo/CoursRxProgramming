@@ -1,7 +1,6 @@
 package kvstore
 
-import akka.actor.{ActorRef, Actor}
-import scala.collection.immutable
+import akka.actor.{Actor, ActorRef}
 
 object Arbiter {
   case object Join
@@ -16,7 +15,7 @@ object Arbiter {
 }
 
 class Arbiter extends Actor {
-  import Arbiter._
+  import kvstore.Arbiter._
   var leader: Option[ActorRef] = None
   var replicas = Set.empty[ActorRef]
 
