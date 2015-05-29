@@ -1,16 +1,12 @@
 package kvstore
 
-import akka.testkit.{ TestProbe, TestKit, ImplicitSender }
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
-import org.scalatest.FunSuiteLike
 import akka.actor.ActorSystem
-import scala.concurrent.duration._
-import kvstore.Arbiter.{ JoinedSecondary, Join }
-import kvstore.Persistence.{ Persisted, Persist }
-import scala.util.Random
-import scala.util.control.NonFatal
+import akka.testkit.{ImplicitSender, TestKit, TestProbe}
+import kvstore.Arbiter.{Join, JoinedSecondary}
 import org.scalactic.ConversionCheckedTripleEquals
+import org.scalatest.{BeforeAndAfterAll, FunSuiteLike, Matchers}
+
+import scala.concurrent.duration._
 
 class Step2_SecondarySpec extends TestKit(ActorSystem("Step2SecondarySpec"))
     with FunSuiteLike

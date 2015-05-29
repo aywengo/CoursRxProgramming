@@ -9,7 +9,6 @@ import org.scalatest.FunSuiteLike
 import akka.actor.Props
 import akka.testkit.TestKit
 import akka.testkit.ImplicitSender
-import scala.concurrent.duration._
 
 object Tools {
   class TestRefWrappingActor(val probe: TestProbe) extends Actor {
@@ -24,7 +23,6 @@ object Tools {
  */
 trait Tools { this: TestKit with FunSuiteLike with Matchers with ImplicitSender =>
 
-  import Arbiter._
   import Tools._
 
   def probeProps(probe: TestProbe): Props = Props(classOf[TestRefWrappingActor], probe)

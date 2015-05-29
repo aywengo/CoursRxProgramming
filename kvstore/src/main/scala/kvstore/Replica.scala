@@ -170,7 +170,7 @@ class Replica(val arbiter: ActorRef, persistenceProps: Props) extends Actor {
 
       case FailGlobalAck(id) =>
         println("in FailGlobalAck primary, globalAcks " + globalAcks)
-        if(!globalAcks(id).isEmpty){
+        if(globalAcks(id).nonEmpty){
           ackRequesters(id)!OperationFailed(id)
           alreadyAcknoweledged+=id
         }
@@ -184,7 +184,7 @@ class Replica(val arbiter: ActorRef, persistenceProps: Props) extends Actor {
     common.orElse{
 
       case Snapshot(key, value, seq) =>
-        replicator=sender
+        replicator=sender()
         println(s"Snapshot key:$key seq:$seq")
         if (expectedSeq == seq) {
           kv = value.fold(kv - key)(v => kv + ((key, v)))
@@ -209,7 +209,7 @@ class Replica(val arbiter: ActorRef, persistenceProps: Props) extends Actor {
     val key=op.key
     println(s"$op $key,$value")
     globalAcks += ((op.id, Set(self)))
-    ackRequesters = ackRequesters.updated(op.id,sender)
+    ackRequesters = ackRequesters.updated(op.id,sender())
     secondaries.values.foreach {
       replicator =>
         replicator ! Replicate(key, value, op.id)

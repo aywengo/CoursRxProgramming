@@ -22,7 +22,7 @@ class Arbiter extends Actor {
   def receive = {
     case Join =>
       if (leader.isEmpty) {
-        leader = Some(sender)
+        leader = Some(sender())
         replicas += sender
         sender ! JoinedPrimary
       } else {

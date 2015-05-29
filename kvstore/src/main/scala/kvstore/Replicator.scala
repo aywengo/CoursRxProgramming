@@ -41,9 +41,8 @@ class Replicator(val replica: ActorRef) extends Actor {
   var _seqCounter = 0L
 
   def nextSeq = {
-    val ret = _seqCounter
     _seqCounter += 1
-    ret
+    _seqCounter - 1
   }
 
   def receive: Receive = {
@@ -69,6 +68,4 @@ class Replicator(val replica: ActorRef) extends Actor {
 
   //scheduler will resend Snapshot every 100 ms to achieve atLeastOnce Delivery to Replica
   context.system.scheduler.schedule(100 milliseconds, 100 milliseconds, self, ResendSnapshot)
-
-
 }
